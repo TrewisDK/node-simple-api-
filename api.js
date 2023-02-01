@@ -2,12 +2,13 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const Pool = require('pg').Pool;
 const password_hash = require('password-hash');
+const { json } = require('express');
 
 const pool = new Pool({
     user: 'postgres',
     host: '127.0.0.1',
     database: 'postgres',
-    password: 'password',
+    password: 'root',
     port: '5432',
 });
 
@@ -50,7 +51,7 @@ app.post('/create_user', (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
     let confirm_password = req.body.confirm_password;
-    if (username.length < 4 || email.length < 4 || password.length === 8 || confirm_password.length === 8) {
+    if (username.length < 4 || email.length < 4 || password.length < 8 || confirm_password.length < 8) {
         res.end(JSON.stringify({
             "accoutn_creating": "faild",
             "message": "Invalid data"
@@ -71,10 +72,10 @@ app.post('/create_user', (req, res) => {
                 "account_creating": "success",
                 "message": `login: ${id}, password: ${confirm_password}`
             }));
-        })
+        });
     }
 
-})
+});
 
 app.post('/create_task', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
@@ -82,15 +83,28 @@ app.post('/create_task', (req, res) => {
     let password = req.body.password;
     let task_name = req.body.task_name;
     let task_text = req.body.task_text;
-    pool.query(`SELECT password FROM users WHERE id = $1`, [login], (error, results) => {
-        if (password_hash.verify(password, results.rows[0]['password']) == false) {
-            res.end(JSON.stringify({ "message": "corrcet" }))
+    let is_login = false
+    pool.query("SELECT password FROM users WHERE id = $1", [login], (error, results) => {
+        if (password_hash.verify(password, results.rows[0]['password']) == true) {
+            is_login = true;
+            console.log(is_login);
+            if (is_login == true){
+                pool.query("INSERT INTO tasks (user_id, task_name, task_text) VALUES ($1, $2, $3) RETURNING *", [login, task_name, task_text], (error, results) => {
+                    if (error){
+                        throw error;
+                    } 
+                    res.end(JSON.stringify({
+                        "message" : `task "${task_name}" created`
+                    }));
+                });
+            }
         } else {
-            res.end(JSON.stringify({ "message": "incorrect password" }))
+            res.end(JSON.stringify({ "message-error": "incorrect password" }));
         }
     })
-})
+    
+});
 
 app.listen(port, () => {
     console.log(`Application listening on port ${port}`);
-})
+});

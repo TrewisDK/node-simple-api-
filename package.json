@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "express": "^4.18.2",
+    "password-hash": "^1.2.2",
+    "pg": "^8.9.0"
+  }
+}

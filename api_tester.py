@@ -11,8 +11,13 @@ data_create = {
 data_login = {
     'login': "b69e30a7c4654", 
     'password' : "test12341",
-    'task_name' : "learn_nodejs",
-    'task_text': "Learn node.js it's realy GOOD idea"
+    'task_name' : "send SQL enjaction",
+    'task_text': "xD"
 }
 
-print(requests.post("http://127.0.0.1:3000/create_task", data=data_login).json())
+data_show = {
+    'login': "b69e30a7c4654", 
+    'password' : "test12341"
+}
+#print(requests.post("http://127.0.0.1:3000/create_task", data=data_login))
+print(requests.get("http://127.0.0.1:3000/show_tasks?login=b69e30a7c4654&password=test12341").json())

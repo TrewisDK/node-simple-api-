@@ -22,8 +22,7 @@ app.get('/', (req, res) => {
     res.end(JSON.stringify({
         'API v.': 0.1,
         'request_method': "GET",
-        "message": "Hello dear user! This application is my First node.js RestAPI =)",
-        "links": ["/create_account", "/create_tusk", "/show_tusk"]
+        "message": "Hello dear user! This application is my First node.js RestAPI =)"
     }))
 })
 
@@ -32,8 +31,7 @@ app.post('/', (req, res) => {
     res.end(JSON.stringify({
         'API v.': 0.1,
         'request_method': "POST",
-        "message": "Hello dear user! This application is my First node.js RestAPI =)",
-        "links": ["/create_account", "/create_tusk", "/delete_task", "/server_stats"]
+        "message": "Hello dear user! This application is my First node.js RestAPI =)"
     }));
 })
 
@@ -104,6 +102,21 @@ app.post('/create_task', (req, res) => {
     })
     
 });
+
+app.get('/show_tasks', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    let login = req.query.login;
+    let password = req.query.password;
+    pool.query("SELECT password FROM users WHERE id = $1", [login], (error, results) => {
+        if (password_hash.verify(password, results.rows[0]['password']) == true) {
+            pool.query("SELECT task_name, task_text FROM tasks WHERE user_id = $1", [login], (error, results) => {
+                res.status(200).json(results.rows);
+            })
+        } else {
+            res.end(JSON.stringify({ "message-error": "incorrect password" }));
+        }
+    })
+})
 
 app.listen(port, () => {
     console.log(`Application listening on port ${port}`);
